@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import { supabase } from '@/lib/supabase'
+import Link from 'next/link'
 
 export default function SignupPage() {
   const [email, setEmail] = useState('')
@@ -27,6 +28,13 @@ export default function SignupPage() {
 
     setLoading(false)
   }
+
+  <p className="mt-4 text-sm">
+    Already have an account?{' '}
+    <Link href="/login" className = "text-blue-600 underline">
+      Log in
+    </Link>
+  </p>
 
   return (
     <main className="mx-auto max-w-md p-8">
