@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
+import Link from 'next/link'
 
 type Metric = {
     id: string
@@ -127,7 +128,7 @@ export default function MetricsPage() {
             const { data: entryData, error: entryError } = await supabase
                 .from('metric_entries')
                 .select('*')
-                .order('entry_data', { ascending: false })
+                .order('entry_date', { ascending: false })
 
             if (entryError) {
                 setMessage(entryError.message)
@@ -155,6 +156,9 @@ export default function MetricsPage() {
         <main className="p-8">
             <h1 className="text-2xl font-bold">Metrics</h1>
             <p className="mt-2 text-sm text-gray-600">Logged in as {user.email}</p>
+           <Link href="/dashboard" className="mt-4 inline-block underline">
+                Back to Dashboard
+            </Link>
 
             {message && <p className="mt-4">{message}</p>}
 

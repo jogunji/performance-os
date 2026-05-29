@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import { useRouter } from 'next/navigation'
+import Link from 'next/link'
 
 
 export default function DashboardPage() {
@@ -49,6 +50,9 @@ export default function DashboardPage() {
     <main className="p-8">
       <h1 className="text-2xl font-bold">Dashboard</h1>
       <p className="mt-4">Logged in as: {user.email}</p>
+      <Link href="/metrics" className="mt-4 inline-block underline">
+        View Metrics      
+      </Link>
       <button 
         onClick={handleLogout}
         className="mt-4 rounded bg-black px-4 py-2 text-white">
