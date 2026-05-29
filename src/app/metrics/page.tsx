@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import Link from 'next/link'
+import { fetchMetrics, fetchMetricEntries } from '@/lib/metrics'
 
 type Metric = {
     id: string
@@ -114,10 +115,7 @@ export default function MetricsPage() {
 
             setUser(userData.user)
 
-            const { data, error } = await supabase
-                .from('metrics')
-                .select('*')
-                .order('created_at', { ascending: false })
+            const { data, error } = await fetchMetrics()
 
             if (error) {
                 setMessage(error.message)
@@ -125,10 +123,7 @@ export default function MetricsPage() {
                 setMetrics(data)
             }
 
-            const { data: entryData, error: entryError } = await supabase
-                .from('metric_entries')
-                .select('*')
-                .order('entry_date', { ascending: false })
+            const { data: entryData, error: entryError } = await fetchMetricEntries()
 
             if (entryError) {
                 setMessage(entryError.message)
