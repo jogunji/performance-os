@@ -1,15 +1,34 @@
-import {supabase} from '@/lib/supabase'
+import { supabase } from '@/lib/supabase'
 
-export async function fetchMetrics(){
+export async function fetchMetrics() {
     return supabase
-    .from('metrics')
-    .select('*')
-    .order('created_at', {ascending: false})
+        .from('metrics')
+        .select('*')
+        .order('created_at', { ascending: false })
 }
 
-export async function fetchMetricEntries(){
+export async function fetchMetricEntries() {
     return supabase
-    .from('metric_entries')
-    .select('*')
-    .order('created_at', {ascending: false})
+        .from('metric_entries')
+        .select('*')
+        .order('created_at', { ascending: false })
+}
+
+export async function createMetric(metric: {
+    user_id: string
+    name: string
+    type: string
+    target_value: number | null
+    unit: string | null
+}) {
+    return supabase.from('metrics').insert(metric).select().single()
+}
+
+export async function createMetricEntry(entry: {
+    metric_id: string
+    user_id: string
+    value: number
+    entry_date: string
+}) {
+    return supabase.from('metric_entries').insert(entry).select().single()
 }
