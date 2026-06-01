@@ -4,7 +4,13 @@ import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase'
 import type { User } from '@supabase/supabase-js'
 import Link from 'next/link'
-import { createMetric, createMetricEntry,fetchMetrics, fetchMetricEntries } from '@/lib/metrics'
+import {
+    createMetric,
+    createMetricEntry,
+    deleteMetric, 
+    fetchMetrics,
+    fetchMetricEntries,
+} from '@/lib/metrics'
 
 type Metric = {
     id: string
@@ -48,13 +54,13 @@ export default function MetricsPage() {
         }
 
         const { data, error } = await createMetric({
-                user_id: user.id,
-                name,
-                type,
-                target_value: targetValue ? Number(targetValue) : null,
-                unit: unit || null,
-            })
-            
+            user_id: user.id,
+            name,
+            type,
+            target_value: targetValue ? Number(targetValue) : null,
+            unit: unit || null,
+        })
+
 
         if (error) {
             setMessage(error.message)
@@ -78,11 +84,11 @@ export default function MetricsPage() {
         }
 
         const { data, error } = await createMetricEntry({
-                metric_id: selectedMetricId,
-                user_id: user.id,
-                value: Number(entryValue),
-                entry_date: entryDate,
-            })
+            metric_id: selectedMetricId,
+            user_id: user.id,
+            value: Number(entryValue),
+            entry_date: entryDate,
+        })
 
         if (error) {
             setMessage(error.message)
@@ -94,6 +100,18 @@ export default function MetricsPage() {
         setEntryDate('')
 
         setMessage('Entry created.')
+    }
+
+    async function handleDeleteMetric(id: string){
+        const { error } = await deleteMetric(id)
+
+        if(error){
+            setMessage(error.message)
+            return
+        }
+        setMetrics(metrics.filter((metric) => metric.id !== id))
+        setEntries(entries.filter((entry) =>entry.metric_id !== id))
+        setMessage('Metric deleted.')        
     }
 
     useEffect(() => {
@@ -144,7 +162,7 @@ export default function MetricsPage() {
         <main className="p-8">
             <h1 className="text-2xl font-bold">Metrics</h1>
             <p className="mt-2 text-sm text-gray-600">Logged in as {user.email}</p>
-           <Link href="/dashboard" className="mt-4 inline-block underline">
+            <Link href="/dashboard" className="mt-4 inline-block underline">
                 Back to Dashboard
             </Link>
 
@@ -252,6 +270,13 @@ export default function MetricsPage() {
                                     ))}
                             </ul>
                         </div>
+<button
+  className="mt-3 rounded bg-red-600 px-3 py-1 text-sm text-white"
+  onClick={() => handleDeleteMetric(metric.id)}
+>
+  Delete metric
+</button>
+
                     </li>
                 ))}
             </ul>
