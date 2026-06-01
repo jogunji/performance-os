@@ -7,10 +7,12 @@ import Link from 'next/link'
 import {
     createMetric,
     createMetricEntry,
-    deleteMetric, 
+    deleteMetric,
+    deleteMetricEntry,
     fetchMetrics,
     fetchMetricEntries,
 } from '@/lib/metrics'
+
 
 type Metric = {
     id: string
@@ -102,16 +104,27 @@ export default function MetricsPage() {
         setMessage('Entry created.')
     }
 
-    async function handleDeleteMetric(id: string){
+    async function handleDeleteMetric(id: string) {
         const { error } = await deleteMetric(id)
 
-        if(error){
+        if (error) {
             setMessage(error.message)
             return
         }
         setMetrics(metrics.filter((metric) => metric.id !== id))
-        setEntries(entries.filter((entry) =>entry.metric_id !== id))
-        setMessage('Metric deleted.')        
+        setEntries(entries.filter((entry) => entry.metric_id !== id))
+        setMessage('Metric deleted.')
+    }
+
+    async function handleDeleteEntry(id: string) {
+
+        const { error } = await deleteMetricEntry(id)
+        if (error) {
+            setMessage(error.message)
+            return
+        }
+        setEntries(entries.filter((entry) => entry.id !== id))
+        setMessage('Entry deleted.')
     }
 
     useEffect(() => {
@@ -264,18 +277,28 @@ export default function MetricsPage() {
                                 {entries
                                     .filter((entry) => entry.metric_id === metric.id)
                                     .map((entry) => (
-                                        <li key={entry.id} className="text-sm text-gray-600">
-                                            {entry.entry_date}: {entry.value}
+                                        <li key={entry.id} className="flex items-center justify-between
+                                         text-sm text-gray-600">
+                                            <span>
+                                                {entry.entry_date}: {entry.value}
+                                            </span>
+                                            <button className="rounded bg-red-600 px-2 py-1 text-xs text-white:"
+                                                onClick={() => handleDeleteEntry(entry.id)}>
+                                                Delete
+                                            </button>
+
+
+
                                         </li>
                                     ))}
                             </ul>
                         </div>
-<button
-  className="mt-3 rounded bg-red-600 px-3 py-1 text-sm text-white"
-  onClick={() => handleDeleteMetric(metric.id)}
->
-  Delete metric
-</button>
+                        <button
+                            className="mt-3 rounded bg-red-600 px-3 py-1 text-sm text-white"
+                            onClick={() => handleDeleteMetric(metric.id)}
+                        >
+                            Delete metric
+                        </button>
 
                     </li>
                 ))}
