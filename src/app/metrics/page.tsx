@@ -11,6 +11,7 @@ import {
     deleteMetricEntry,
     fetchMetrics,
     fetchMetricEntries,
+    updateMetricEntry,
 } from '@/lib/metrics'
 
 
@@ -46,6 +47,9 @@ export default function MetricsPage() {
     const [selectedMetricId, setSelectedMetricId] = useState('')
     const [entryValue, setEntryValue] = useState('')
     const [entryDate, setEntryDate] = useState('')
+    const [editingEntryId, setEditingEntryId] = useState('')
+    const [editingEntryValue, setEditingEntryValue] = useState('')
+    const [editingEntryDate, setEditingEntryDate] = useState('')
 
     async function handleCreateMetric(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
@@ -103,6 +107,37 @@ export default function MetricsPage() {
 
         setMessage('Entry created.')
     }
+
+    function startEditingEntry(entry: MetricEntry) {
+        setEditingEntryId(entry.id)
+        setEditingEntryValue(String(entry.value))
+        setEditingEntryDate(entry.entry_date)
+    }
+
+    async function handleUpdateEntry(event: React.FormEvent<HTMLFormElement>) {
+        event.preventDefault()
+
+        const { data, error } = await updateMetricEntry(editingEntryId, {
+            value: Number(editingEntryValue),
+            entry_date: editingEntryDate,
+        })
+
+        if (error) {
+            setMessage(error.message)
+            return
+        }
+        setEntries(
+            entries.map((entry) => (entry.id === data.id ? data : entry))
+        )
+
+        setEditingEntryId('')
+        setEditingEntryValue('')
+        setEditingEntryDate('')
+        setMessage('Entry updated.')
+    }
+
+
+
 
     async function handleDeleteMetric(id: string) {
         const { error } = await deleteMetric(id)
@@ -279,6 +314,52 @@ export default function MetricsPage() {
                                     .map((entry) => (
                                         <li key={entry.id} className="flex items-center justify-between
                                          text-sm text-gray-600">
+                                            {editingEntryId === entry.id ? (
+                                                <form onSubmit={handleUpdateEntry} className="flex gap-2">
+                                                    <input
+                                                        className="rounded border p-1"
+                                                        type="number"
+                                                        value={editingEntryValue}
+                                                        onChange={(event) => setEditingEntryValue(event.target.value)}
+                                                    />
+
+                                                    <input
+                                                        className="rounded border p-1"
+                                                        type="date"
+                                                        value={editingEntryDate}
+                                                        onChange={(event) => setEditingEntryDate(event.target.value)}
+                                                    />
+
+                                                    <button className="rounded bg-black px-2 py-1 text-xs text-white">
+                                                        Save
+                                                    </button>
+                                                </form>
+                                            ) : (
+                                                <>
+                                                    <span>
+                                                        {entry.entry_date}: {entry.value}
+                                                    </span>
+
+                                                    <div className="flex gap-2">
+                                                        <button
+                                                            className="rounded bg-gray-700 px-2 py-1 text-xs text-white"
+                                                            onClick={() => startEditingEntry(entry)}
+                                                        >
+                                                            Edit
+                                                        </button>
+
+                                                        <button
+                                                            className="rounded bg-red-600 px-2 py-1 text-xs text-white"
+                                                            onClick={() => handleDeleteEntry(entry.id)}
+                                                        >
+                                                            Delete
+                                                        </button>
+                                                    </div>
+                                                </>
+                                            )}
+
+
+
                                             <span>
                                                 {entry.entry_date}: {entry.value}
                                             </span>

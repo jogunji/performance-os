@@ -33,10 +33,26 @@ export async function createMetricEntry(entry: {
     return supabase.from('metric_entries').insert(entry).select().single()
 }
 
-export async function deleteMetric(id: string){
+export async function deleteMetric(id: string) {
     return supabase.from('metrics').delete().eq('id', id)
 }
 
-export async function deleteMetricEntry(id: string){
+export async function deleteMetricEntry(id: string) {
     return supabase.from('metric_entries').delete().eq('id', id)
 }
+
+export async function updateMetricEntry(
+    id: string,
+    entry: {
+        value: number
+        entry_date: string
+    }
+) {
+    return supabase
+        .from('metric_entries')
+        .update(entry)
+        .eq('id', id)
+        .select()
+        .single()
+}
+
