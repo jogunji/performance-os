@@ -13,6 +13,7 @@ import {
     fetchMetricEntries,
     updateMetricEntry,
 } from '@/lib/metrics'
+import { metricTemplates } from "@/lib/metricTemplates";
 
 
 type Metric = {
@@ -50,6 +51,11 @@ export default function MetricsPage() {
     const [editingEntryId, setEditingEntryId] = useState('')
     const [editingEntryValue, setEditingEntryValue] = useState('')
     const [editingEntryDate, setEditingEntryDate] = useState('')
+    const [selectedTemplateId, setSelectedTemplateId] = useState('')
+
+    const selectedTemplate = metricTemplates.find(
+        (template) => template.id === selectedTemplateId
+    )
 
     async function handleCreateMetric(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
@@ -59,12 +65,21 @@ export default function MetricsPage() {
             return
         }
 
+        const selectedTemplate = metricTemplates.find(
+            (template) => template.id === selectedTemplateId
+        )
+
+        if (!selectedTemplate) {
+            setMessage('Please select a metric templapte')
+            return
+        }
+
         const { data, error } = await createMetric({
             user_id: user.id,
-            name,
-            type,
-            target_value: targetValue ? Number(targetValue) : null,
-            unit: unit || null,
+            name: selectedTemplate.name,
+            type: selectedTemplate.scoringType,
+            target_value: targetValue ? Number(targetValue) : selectedTemplate.defaultTarget,
+            unit: selectedTemplate.unit,
         })
 
 
@@ -74,12 +89,12 @@ export default function MetricsPage() {
         }
 
         setMetrics([data, ...metrics])
-        setName('')
-        setType('numeric')
+        setSelectedTemplateId('')
         setTargetValue('')
-        setUnit('')
         setMessage('Metric created.')
     }
+
+
 
     async function handleCreateEntry(event: React.FormEvent<HTMLFormElement>) {
         event.preventDefault()
@@ -217,36 +232,45 @@ export default function MetricsPage() {
             {message && <p className="mt-4">{message}</p>}
 
             <form onSubmit={handleCreateMetric} className="mt-6 space-y-4 rounded border p-4">
-                <input
-                    className="w-full rounded border p-2"
-                    placeholder="Metric name"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                />
 
                 <select
                     className="w-full rounded border p-2"
-                    value={type}
-                    onChange={(event) => setType(event.target.value)}
+                    value={selectedTemplateId}
+                    onChange={(event) => {
+                        const templateId = event.target.value
+                        setSelectedTemplateId(templateId)
+
+                        const template = metricTemplates.find(
+                            (metricTemplate) => metricTemplate.id === templateId
+                        )
+
+                        if (template) {
+                            setTargetValue(String(template.defaultTarget))
+                        }
+                    }}
+                    required
                 >
-                    <option value="numeric">Numeric</option>
-                    <option value="boolean">Boolean</option>
-                    <option value="rating">Rating</option>
+                    <option value="">Select metric</option>
+
+                    {metricTemplates.map((template) => (
+                        <option key={template.id} value={template.id}>
+                            {template.name}
+                        </option>
+                    ))}
                 </select>
 
-                <input
-                    className="w-full rounded border p-2"
-                    placeholder="Target value"
-                    value={targetValue}
-                    onChange={(event) => setTargetValue(event.target.value)}
-                />
+                <div className="flex items-center gap-2">
+                    <input
+                        className="w-full rounded border p-2"
+                        value={targetValue}
+                        onChange={(event) => setTargetValue(event.target.value)}
+                    />
 
-                <input
-                    className="w-full rounded border p-2"
-                    placeholder="Unit, e.g. minutes, hours"
-                    value={unit}
-                    onChange={(event) => setUnit(event.target.value)}
-                />
+                    <span className="text-sm text-gray-600">
+                        {selectedTemplate?.unit}
+                    </span>
+                </div>
+
 
                 <button className="rounded bg-black px-4 py-2 text-white" type="submit">
                     Add metric
@@ -357,17 +381,6 @@ export default function MetricsPage() {
                                                     </div>
                                                 </>
                                             )}
-
-
-
-                                            <span>
-                                                {entry.entry_date}: {entry.value}
-                                            </span>
-                                            <button className="rounded bg-red-600 px-2 py-1 text-xs text-white:"
-                                                onClick={() => handleDeleteEntry(entry.id)}>
-                                                Delete
-                                            </button>
-
 
 
                                         </li>
